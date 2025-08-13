@@ -1,0 +1,43 @@
+# 忽略输出文件夹下的所有文件
+data/output/
+
+# 忽略常见的输出文件格式
+*.xlsx
+*.csv
+*.json
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# 忽略 Python 缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 忽略 Jupyter Notebook 检查点
+.ipynb_checkpoints/
+
+# 忽略 VS Code 设置
+.vscode/
+
+# 忽略临时文件
+*.tmp
+*.temp
+*~
+
+# 忽略日志文件
+*.log
+
+# 忽略操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 忽略 Windows 系统文件
+desktop.ini
