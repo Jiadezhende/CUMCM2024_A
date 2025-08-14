@@ -26,14 +26,72 @@ class Model_1:
 
     # 忽略碰撞情况，且终点处极径不过小，不出现连接点回退
     
-    def trace_period(self, theta_start,time,v):
+    def trace_period(self, theta_start, max_time, v, step=0.01, output_dir="../data/output"):
         """
-        追踪板凳龙的盘入轨迹
-        @param time: 最大追踪时间
+        追踪板凳龙的盘入轨迹，记录每秒的位置和速度
+        @param theta_start: 起始极角
+        @param max_time: 最大追踪时间（秒）
         @param v: 速度
-        return
+        @param step: 计算步长
+        @param output_dir: 输出目录
+        @return: 包含所有时刻数据的字典
         """
-        return
+        import datetime
+        
+        # 创建输出目录
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # 生成时间戳用于文件命名
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        pos_file = os.path.join(output_dir, f"trajectory_positions_{timestamp}.xlsx")
+        vel_file = os.path.join(output_dir, f"trajectory_velocities_{timestamp}.xlsx")
+        
+        print(f"开始追踪板凳龙轨迹，时间范围: 0-{max_time}秒")
+        print(f"起始极角: {theta_start:.4f} rad")
+        print(f"速度: {v} m/s")
+        
+        all_positions = []
+        all_velocities = []
+        
+        # 逐秒计算位置和速度
+        for t in range(int(max_time) + 1):
+            try:
+                # 检查头部是否还在有效范围内
+                head_theta = self.head_trace(theta_start, t, v)
+                if head_theta <= 0:
+                    print(f"警告: 在t={t}s时头部极角为负，停止计算")
+                    break
+                
+                # 计算当前时刻的位置
+                pos_result = self.pos_trace_moment(theta_start, t, v, step)
+                all_positions.append(pos_result)
+                
+                # 计算当前时刻的速度
+                vel_result = self.v_trace_moment(pos_result, v)
+                all_velocities.append(vel_result)
+                
+                # 保存到Excel文件（批量处理）
+                self.save_position(pos_result, pos_file)
+                self.save_velocity(vel_result, vel_file)
+                
+                if t % 10 == 0:  # 每10秒输出一次进度
+                    print(f"已完成 t={t}s 的计算")
+                    
+            except Exception as e:
+                print(f"在t={t}s时发生错误: {e}")
+                break
+        
+        print(f"轨迹追踪完成，共计算了 {len(all_positions)} 个时刻")
+        print(f"位置数据保存至: {pos_file}")
+        print(f"速度数据保存至: {vel_file}")
+        
+        return {
+            'positions_timeline': all_positions,
+            'velocities_timeline': all_velocities,
+            'position_file': pos_file,
+            'velocity_file': vel_file,
+            'total_time_points': len(all_positions)
+        }
 
     def pos_trace_moment(self, theta_start,time, v,step):
         """
@@ -59,6 +117,7 @@ class Model_1:
                 res.append(next_pos)
         
         return {
+            'theta_start': theta_start,
             'time': time,
             'positions': res
         }
@@ -127,6 +186,7 @@ class Model_1:
         @param v: 龙头速度
         @return: 包含时刻和速度信息的字典
         """
+        theta_start = pos_result['theta_start']
         time = pos_result['time']
         theta_list = pos_result['positions']
         
@@ -135,6 +195,7 @@ class Model_1:
             res.append(self.__private_function1(theta_list[i], theta_list[i+1]) * res[i])
         
         return {
+            'theta_start': theta_start,
             'time': time,
             'velocities': res
         }
@@ -216,10 +277,14 @@ class Model_1:
         
         # 创建行索引
         row_labels = ['龙头x (m)', '龙头y (m)']
-        for i in range(1, len(positions)):
+        for i in range(1, len(positions)-2):
             row_labels.append(f'第{i}节龙身x (m)')
             row_labels.append(f'第{i}节龙身y (m)')
-        
+        row_labels.append('龙尾x (m)')
+        row_labels.append('龙尾y (m)')
+        row_labels.append('龙尾（后）x (m)')
+        row_labels.append('龙尾（后）y (m)')
+
         # 尝试读取现有文件
         if os.path.exists(output_file):
             try:
@@ -264,9 +329,11 @@ class Model_1:
         
         # 创建行索引
         row_labels = ['龙头 (m/s)']
-        for i in range(1, len(velocity_list)):
+        for i in range(1, len(velocity_list)-2):
             row_labels.append(f'第{i}节龙身 (m/s)')
-        
+        row_labels.append('龙尾 (m/s)')
+        row_labels.append('龙尾（后）(m/s)')
+
         # 尝试读取现有文件
         if os.path.exists(output_file):
             try:
