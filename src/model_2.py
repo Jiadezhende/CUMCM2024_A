@@ -79,7 +79,7 @@ class Model_2(Model_1):
         @param num: 板凳龙数量
         @param head_length: 头部长度
         @param body_length: 身体长度
-        @param distance: 初始距离
+        @param distance: 螺距
         @param extension: 连接点到窄边的距离
         @param width: 宽度
         """
