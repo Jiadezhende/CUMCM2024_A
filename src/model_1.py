@@ -127,9 +127,9 @@ class Model_1:
         if step<=0: raise ValueError("__private_next: 步长必须为正数")
         start_time = tm.time()
         ans = theta
-        tar = 4 * (length ** 2) * (pi ** 2) / (self.distance ** 2) - theta ** 2
+        tar = 4 * (length ** 2) * (np.pi ** 2) / (self.distance ** 2) - theta ** 2
         iter_count = 0
-        timeout = 5  # 超时时间（秒），可根据需要调整
+        timeout = 3  # 超时时间（秒），可根据需要调整
         if upper_bound:
             while ans < upper_bound:
                 ans += step

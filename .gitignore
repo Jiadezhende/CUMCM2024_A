@@ -2,13 +2,11 @@
 data/output/
 
 # 忽略常见的输出文件格式
-*.xlsx
 *.csv
 *.json
 *.png
 *.jpg
 *.jpeg
-*.pdf
 
 # 忽略 Python 缓存文件
 __pycache__/
